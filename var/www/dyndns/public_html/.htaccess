@@ -1,0 +1,15 @@
+RewriteEngine	on
+
+RewriteRule	^/?favicon.ico$		favicon.ico	[L]
+
+# https://dyndns.example.net/nic/update => updateip.cgi
+RewriteRule	^/?nic/update.*$ 	nic/update/index.cgi	[L]
+
+# execute checkip.cgi as-is
+RewriteRule	^/checkip\.cgi$		checkip.cgi	[L]
+
+# everthing else, do the checkip.cgi !
+RewriteRule	^/?$			checkip.cgi	[L]
+RewriteRule	^/?nic/.*$		checkip.cgi	[L]
+RewriteRule	^/?.*$			checkip.cgi	[L]
+

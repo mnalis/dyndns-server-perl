@@ -1,0 +1,79 @@
+#!/bin/bash
+# Matija Nalis <mnalis-perl@axe.tomsoft.hr> GPLv3+ 2015-01
+
+if [ -z "$1" ]
+then
+	echo usage: $0 username
+	echo
+	echo it will create dynamic host named USERNAME.dyndns.example.net
+	echo after asking for password for it
+	exit 10
+fi
+
+if [ "`id -un`" != "tinydns" ]
+then
+	echo Not running as user tinydns, switching user...
+	exec sudo -u tinydns $0 "$@"
+	exit 11
+fi
+
+# htusers
+echo "Enter password for DYNDNS user $1"
+HTUSERS=/var/www/dyndns/htusers
+htpasswd $HTUSERS $1
+
+# send mail
+echo "Dyndns.example.net - update password za korisnika $1" | mail -s "Dyndns.example.net - update password" dyndns@example.net
+
+# tinydns/root/data
+TINYDNS_HOME="/etc/serv/tinydns/root"
+TINYDNS_DATA="$TINYDNS_HOME/data"
+TINYDNS_LOCK="$TINYDNS_HOME/Makefile"
+
+(	# start global lock block
+echo "Acquiring global local $TINYDNS_LOCK..."
+if ! flock --exclusive --wait 5 98
+then
+	echo "Can't acquire lock $TINYDNS_LOCK, ABORTING"
+	exit 35
+fi
+
+HOSTNAME="$1.dyndns.example.net"
+if fgrep -q "+$HOSTNAME:" $TINYDNS_DATA
+then
+	echo "REFUSING to create duplicate DNS $HOSTNAME in $TINYDNS_DATA, ABORTING"
+	exit 12
+fi
+
+echo "dodaj b4 lock $$"
+(
+	if ! flock --exclusive --nonblock 99
+	then
+		echo
+		echo "ERROR: data file in use, aborting!!!"
+		echo
+		exit 30
+	fi
+	echo "+$HOSTNAME:127.0.0.1:60" >&99
+) 99>> $TINYDNS_DATA
+
+if [ $? -ne 0 ]
+then
+	exit $?
+fi
+
+echo "dodaj aft lock $$"
+sync
+
+echo "Successfully added DYNDNS dynamic hostname $HOSTNAME"
+
+make -C $TINYDNS_HOME
+
+# commit git (FIXME ne radi kao tinydns user)
+#etckeeper commit "dodaj_dyndns"
+
+# send mail
+echo "Dyndns.example.net - kreiran novi account za korisnika $1" | mail -s "Dyndns.example.net - new account" dyndns@example.net
+
+exit 0
+) 98<$TINYDNS_LOCK	# end global lock block

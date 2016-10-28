@@ -1,0 +1,9 @@
+Zdyndns.example.net:ns1.dyndns.example.net:dyndns.example.net
+&dyndns.example.net::ns1.dyndns.example.net
+&dyndns.example.net::ns2.dyndns.example.net
++ns1.dyndns.example.net:192.0.2.1:666
+=dyndns.example.net:192.0.2.1:60
+
+# DYNAMIC IP BELOW - DO NOT CHANGE MANUALLY!
++foo.dyndns.example.net:198.51.100.17:1
++bar.dyndns.example.net:203.0.113.99:60

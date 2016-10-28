@@ -1,0 +1,5 @@
+AuthType Basic
+AuthName "dyndns.example.net member"
+AuthUserFile /var/www/dyndns/htusers
+
+Require valid-user 

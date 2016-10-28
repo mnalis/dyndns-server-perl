@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+# Matija Nalis <mnalis-perl@axe.tomsoft.hr> GPLv3+ 2014,2015
+# safely rebuild data.cdb (wait for LOCK put by /var/www/dyndns/public_html/nic/update/index.cgi)
+
+use strict;
+use warnings;
+
+use Fcntl ':flock';
+
+my $TINYDNS_BUILD = '/usr/bin/tinydns-data';
+my $TINYDNS_ROOT = '/service/tinydns/root';
+my $TINYDNS_DATA = 'data';
+my $TINYDNS_LOCK = "$TINYDNS_ROOT/Makefile";
+my $DEBUG = 0;
+
+my $LOGFILE = '/var/log/dyndns.log';
+
+# logs extra info
+sub debug($) 
+{
+	my ($txt) = @_;
+	
+	open my $LOGFILE, '>>', $LOGFILE  or die("can't log to $LOGFILE: $!");
+	my $timestamp = "$$ - " . localtime() . " - ";
+	print $LOGFILE "$timestamp reload_dyndns - $txt\n" or die("can't write to $LOGFILE: $!");;
+	close $LOGFILE or die("can't finish writing to $LOGFILE: $!");
+}
+
+debug('started');
+
+chdir($TINYDNS_ROOT) or die "can't chdir to: $TINYDNS_ROOT: $!";
+
+debug ("opening global lock $TINYDNS_LOCK ...");
+open(my $global_lock, '<', $TINYDNS_LOCK) or die "Could not open $TINYDNS_LOCK: $!";
+debug ("locking global lock $TINYDNS_LOCK ...");
+flock($global_lock, LOCK_EX) or die "Could not lock $TINYDNS_LOCK: $!";
+$DEBUG && print "global locked ok $$....";
+
+debug ("opening $TINYDNS_DATA ...");
+open(my $fh, '<', $TINYDNS_DATA) or die "Could not open $TINYDNS_DATA: $!";
+$DEBUG && print "opened ok $$... ";
+debug ("locking $TINYDNS_DATA ...");
+flock($fh, LOCK_EX) or die "Could not lock $TINYDNS_DATA: $!";
+$DEBUG && print "data locked ok $$....";
+debug ("rebuilding CDB using $TINYDNS_BUILD ...");
+system($TINYDNS_BUILD) == 0 or die "can't rebuild via $TINYDNS_BUILD: $?";
+$DEBUG && print "system ok $$ -- reloaded\n";
+debug ("rebuilt CDB using $TINYDNS_BUILD: $? ...");
+
+debug("finished\n");
+
+# on exit, files will be closed and locks released automatically
+exit $?;
+
