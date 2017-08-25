@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<TITLE>Admin - dyndns</TITLE>
+
+<style type="text/css">
+.hidden {display:none; }
+</style>
+
+<script>
+function PrepAction(akcija){
+  var form_valid = false;
+    
+  var akcija = document.forms.forma.elements.akcija.value;
+  //alert("akcija=" + akcija);
+  
+  var divs = document.getElementById('suboptions').getElementsByTagName('div');
+  for (var i = 0; i < divs.length; i += 1) {
+  	//alert ("passing " + divs[i].id);
+  	if (divs[i].id == akcija) {
+  		divs[i].className = 'active';
+  		//alert ("activating " + akcija);
+  		my_inputs = divs[i].getElementsByTagName('input');
+  		for (var j = 0; j < my_inputs.length; j += 1) {
+  			//alert ("palim " + my_inputs[j].id);
+	  		my_inputs[j].disabled = false;
+	  	}
+  	} else {
+  		divs[i].className = 'hidden';
+  		other_inputs = divs[i].getElementsByTagName('input');
+  		for (var j = 0; j < other_inputs.length; j += 1) {
+  			//alert ("gasim " + other_inputs[j].id);
+	  		other_inputs[j].disabled = true;
+	  	}
+  	}
+  }
+  
+}
+
+function SubmitOnlyUsed() {
+  var akcija = document.forms.forma.elements.akcija.value;
+  var divs = document.getElementById('suboptions').getElementsByTagName('div');
+  return true;
+}
+
+</script>
+</head>
+
+<BODY onLoad='PrepAction("dodaj_dyndns")'>
+
+
+<FORM METHOD="POST" ACTION="adm_dyndns.cgi" name="forma" id="forma" onSubmit='return SubmitOnlyUsed()'>
+Akcija (obavezno):
+  <input type="radio" name="akcija" value="dodaj_dyndns" onChange='PrepAction("dodaj_dyndns")' CHECKED> dodaj_dyndns
+  <input type="radio" name="akcija" value="passwd_dyndns" onChange='PrepAction("passwd_dyndns")'> passwd_dyndns
+  <input type="radio" name="akcija" value="ubij_dyndns" onChange='PrepAction("ubij_dyndns")'> ubij_dyndns
+    
+<p>
+
+ 
+Username: <INPUT TYPE=text id=username name=username><br>
+
+<div id="suboptions">
+  <div id="dodaj_dyndns" class=hidden>
+    dodaj_dyndns Password: <INPUT TYPE=password name=password>
+  </div>
+  
+  <div id="passwd_dyndns" class=hidden>
+    izmijeni Password: <INPUT TYPE=password name=password>
+  </div>
+
+  <div id="ubij_dyndns" class=hidden>
+    <!-- ubij_dyndns nesto: <INPUT TYPE=text name=nesto> -->
+  </div>
+</div>
+
+<p>
+<input type="hidden" name="verbose" value="1">
+<input type="submit" name="Izmijeni">
+</FORM>
+
+</BODY>
+</HTML>

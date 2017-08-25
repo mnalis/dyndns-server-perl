@@ -1,0 +1,8 @@
+AuthName "ADMINISTRATION dyndns"
+AuthType Basic
+AuthUserFile /etc/apache2/htusers
+require user service
+
+Order Deny,Allow
+Deny from all
+Allow from 192.168.1.0/24

@@ -2,6 +2,9 @@ RewriteEngine	on
 
 RewriteRule	^/?favicon.ico$		favicon.ico	[L]
 
+# web admin
+RewriteRule	^/?admin/.*$		-		[L]
+
 # https://dyndns.example.net/nic/update => updateip.cgi
 RewriteRule	^/?nic/update.*$ 	nic/update/index.cgi	[L]
 
